@@ -16,10 +16,6 @@ export async function singUp(req, res){
         await db.collection("users").insertOne({name, email, password: hash, state, city, road})
         res.status(201).send("Usuário criado com sucesso!")
 
-        const token = uuid()
-        // continuar a partir daqui
-
-
     } catch(err){
         res.status(500).send(err.message)
     }
@@ -37,8 +33,36 @@ export async function login (req, res){
         const isPasswordCorrect = bcrypt.compareSync(password, user.password)
         if (!isPasswordCorrect) return res.status(401).send("Senha incorreta")
 
+        const token = uuid()
+        
+        await db.collection("sessions").insertOne({token, userId: user._id})
+        res.send({token, userName: user.name})
+
+
     } catch (err){
         res.status(500).send(err.message)
+    }
+
+}
+
+export async function logout (req, res){
+
+    const {authorization} = req.headers
+
+    const token = authorization?.replace("Bearer ", "")
+
+    if(!token) return res.sendStatus(401)
+
+    try {
+
+        const sessions = await db.collection("sessions").findOne({token})
+        if(!sessions) return res.sendStatus(401)
+
+        await db.collection("sessions").deleteOne({token})
+        res.status(200).send("Logout realizado com sucesso!")
+
+    } catch (err){
+      res.status(500).send(err.message)
     }
 
 }
