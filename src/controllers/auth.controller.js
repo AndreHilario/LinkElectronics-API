@@ -1,68 +1,61 @@
-import {db} from "../database/database.connection.js"
+import { db } from "../database/database.connection.js"
 import bcrypt from "bcrypt"
 import { v4 as uuid } from "uuid"
 
 
-export async function singUp(req, res){
+export async function singUp(req, res) {
 
-    const {name, email, password, state, city, road} = req.body
+    const { name, email, password, state, city, road } = req.body
 
-    try{
+    try {
         const user = await db.collection("users").findOne({ email })
-        if(user) return res.status(409).send("E-mail já está cadastrado!")
+        if (user) return res.status(409).send("E-mail já está cadastrado!")
 
         const hash = bcrypt.hashSync(password, 10)
 
-        await db.collection("users").insertOne({name, email, password: hash, state, city, road})
+        await db.collection("users").insertOne({ name, email, password: hash, state, city, road })
         res.status(201).send("Usuário criado com sucesso!")
 
-    } catch(err){
+    } catch (err) {
         res.status(500).send(err.message)
     }
 
 }
 
-export async function login (req, res){
+export async function login(req, res) {
 
-    const {email, password} = req.body
+    const { email, password } = req.body
 
-    try{
+    try {
         const user = await db.collection("users").findOne({ email })
-        if(!user) return res.status(401).send("E-mail ainda não cadastrado!")
+        if (!user) return res.status(401).send("E-mail ainda não cadastrado!")
 
         const isPasswordCorrect = bcrypt.compareSync(password, user.password)
         if (!isPasswordCorrect) return res.status(401).send("Senha incorreta")
 
         const token = uuid()
-        
-        await db.collection("sessions").insertOne({token, userId: user._id})
-        res.send({token, userName: user.name})
+
+        await db.collection("sessions").insertOne({ token, userId: user._id })
+        res.send({ token, userName: user.name })
 
 
-    } catch (err){
+    } catch (err) {
         res.status(500).send(err.message)
     }
 
 }
 
-export async function logout (req, res){
+export async function logout(req, res) {
 
-    const {authorization} = req.headers
-
-    const token = authorization?.replace("Bearer ", "")
-
-    if(!token) return res.sendStatus(401)
+    const { token } = res.locals.session
 
     try {
 
-        const sessions = await db.collection("sessions").findOne({token})
-        if(!sessions) return res.sendStatus(401)
-
-        await db.collection("sessions").deleteOne({token})
+        await db.collection("sessions").deleteOne({ token })
         res.status(200).send("Logout realizado com sucesso!")
 
-    } catch (err){
-      res.status(500).send(err.message)
+    } catch (err) {
+        res.status(500).send(err.message)
     }
 
 }
