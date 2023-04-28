@@ -9,9 +9,10 @@ const productsRouter = Router();
 
 productsRouter.use(authValidation);
 
-productsRouter.post("/shopping", validateSchema(productDetailsSchema), postProductDetails);
+
 productsRouter.get("/home", getProducts);
 productsRouter.get("/products/:id", getProductById);
+productsRouter.post("/shopping/:id", validateSchema(productDetailsSchema), postProductDetails);
 
 
 export default productsRouter;

@@ -15,6 +15,7 @@ export async function getProducts(req, res) {
 export async function getProductById(req, res) {
 
     const { id } = req.params;
+    if (!id) return res.sendStatus(404);
 
     try {
         const product = await db.collection("products").findOne({ _id: new ObjectId(id) });
@@ -28,6 +29,9 @@ export async function getProductById(req, res) {
 
 
 export async function postProductDetails(req, res) {
+
+    const { id } = req.params;
+    if (!id) return res.sendStatus(404);
 
     try {
         const now = dayjs().format("HH:mm:ss");
