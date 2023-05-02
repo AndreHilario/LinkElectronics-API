@@ -7,9 +7,6 @@ import { productDetailsSchema } from "../schemas/product.schema.js";
 
 const productsRouter = Router();
 
-productsRouter.use(authValidation);
-
-
 productsRouter.get("/home", getProducts);
 productsRouter.get("/products/:id", getProductById);
 productsRouter.post("/shopping/:id", validateSchema(productDetailsSchema), postProductDetails);
